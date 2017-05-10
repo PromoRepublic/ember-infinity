@@ -87,6 +87,12 @@ const RouteMixin = Mixin.create({
   _modelPath: 'controller.model',
 
   /**
+   * Throttle of reqload infinity odel execution
+   * @type {Number}
+   */
+  throttleRequest: 0,
+
+  /**
    * Name of the "per page" param in the
    * resource request payload
    * @type {String}
@@ -180,12 +186,12 @@ const RouteMixin = Mixin.create({
   _ensureCustomStoreCompatibility(options) {
     if (typeof options.store !== 'string') {
       throw new Ember.Error("Ember Infinity: Must pass custom data store as a string");
-    } 
+    }
 
     const store = this.get(options.store);
     if (!store[this.get('_storeFindMethod')]) {
       throw new Ember.Error("Ember Infinity: Custom data store must specify query method");
-    } 
+    }
   },
 
   /**
@@ -272,7 +278,8 @@ const RouteMixin = Mixin.create({
       return;
     }
 
-    this._loadNextPage();
+
+    Ember.run.throttle(this, this._loadNextPage, this.get('throttleRequest'));
   },
 
   /**
